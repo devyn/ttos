@@ -1,10 +1,10 @@
-= The TerraTop Operating System =
+# The TerraTop Operating System
 
 TTOS runs in your HTML5-capable browser. All processes run server-side, and may communicate with the client through a WebSocket.
 
 The goal is to provide a "WebOS" with an attractive canvas-based interface and low-latency WebSocket for live server communication.
 
-== Usage ==
+## Usage
 
 First, run the server:
 
@@ -17,7 +17,7 @@ When TTOS is started with no database, the setup wizard will be shown. It mostly
 
 Once that's done, you will be presented with the TTOS user interface!
 
-== TTOS-UI ==
+## TTOS-UI
 
 TTOS has a single-application interface. You can have multiple applications open at one time, but you may only display one at a time. The bar at the top is called the "flick."
 
