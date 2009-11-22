@@ -46,10 +46,29 @@ TTOS.connect = function(u) {
 };
 
 TTOS.message = function(e) {
+  var msg = e.data.split("?",2);
+  try {
+    switch (msg[0]) {
+      case 'eval':
+        var result = eval(msg[1]);
+        TTOS.socket.send("ok?eval");
+        break;
+      case 'exit':
+        TTOS.socket.send("ok?exit");
+        TTOS.socket.onclose = null;
+        TTOS.socket.close();
+        document.location.reload();
+        break;
+      default:
+        TTOS.socket.send("error?The instruction given ("+msg[0]+") is not supported.");
+    }
+  } catch (err) {
+    TTOS.socket.send("JSerror?"+err.name+": "+err.message);
+  }
 };
 
 TTOS.noConnection = function(e) {
-  TTOS.fatalError("Could not connect to TTOS server.\nIt is possible that the server is down for maintenance.\nPlease try again later.");
+  TTOS.fatalError("Could not connect to TTOS server.\nIt is possible that the server is down for maintenance,\nor that your network is down. Please try again later.");
 };
 
 TTOS.lostConnection = function(e) {
@@ -69,11 +88,16 @@ TTOS.fatalError = function(s) {
     ctx.fillRect(0, 0, TTOS.canvas.width, TTOS.canvas.height);
     ctx.restore();
     ctx.save();
-    ctx.font = "12pt sans-serif";
     ctx.fillStyle = "#999";
     var ss = s.split("\n");
     for (c in ss) {
-      ctx.fillText(ss[c], TTOS.percentX(10), TTOS.percentY(10)+(16*c));
+      if (c==0) {
+        ctx.font = "32px sans-serif";
+        ctx.fillText(ss[c], 75, 75);
+      } else {
+        ctx.font = "16px sans-serif";
+        ctx.fillText(ss[c], 75, 75+(16*(c-1))+32);
+      }
     }
     ctx.restore();
   };
