@@ -18,6 +18,7 @@ function initWebSocket() {
 TTOS = {};
 
 TTOS.init = function() {
+  initWebSocket();
   TTOS.canvas = document.getElementById("ttos-display");
   TTOS.drawing = {};
   TTOS.children = {intervals: [], timeouts: []};
