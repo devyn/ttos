@@ -20,13 +20,14 @@ TTOS = {};
 TTOS.init = function() {
   TTOS.canvas = document.getElementById("ttos-display");
   TTOS.drawing = {};
+  TTOS.children = {intervals: [], timeouts: []};
   TTOS.startDisplay();
   TTOS.connect(TTOS.serverURL);
 };
 
 TTOS.startDisplay = function() {
   TTOS.gc = TTOS.canvas.getContext('2d');
-  TTOS.drawProcess = setInterval(TTOS.draw, 1);
+  TTOS.children.intervals += setInterval(TTOS.draw, 1);
 };
 
 TTOS.draw = function() {
@@ -80,6 +81,8 @@ TTOS.percentX = function(i) { return i/100*TTOS.canvas.width;  };
 TTOS.percentY = function(i) { return i/100*TTOS.canvas.height; };
 
 TTOS.fatalError = function(s) {
+  for (i in TTOS.children.intervals) { clearInterval(TTOS.children.intervals[i]); }
+  for (i in TTOS.children.timeouts) { clearTimeout(TTOS.children.timeouts[i]); }
   document.title = "TTOS - Fatal Error";
   TTOS.drawing = {};
   TTOS.drawing.modal = function(ctx) {
@@ -101,4 +104,5 @@ TTOS.fatalError = function(s) {
     }
     ctx.restore();
   };
+  TTOS.draw();
 };
