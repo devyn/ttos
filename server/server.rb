@@ -28,7 +28,7 @@ TTOS.drawing.timeApp = function(ctx) {
   ctx.restore();
 };
 
-TTOS.children.intervals += setInterval(function(){TTOS.TimeApp.ticks+=1;}, 1/30);
+TTOS.children.intervals.push(setInterval(function(){TTOS.TimeApp.ticks+=1;}, 1/30));
 END
 
 trap(:INT) { exit }

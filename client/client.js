@@ -27,7 +27,7 @@ TTOS.init = function() {
 
 TTOS.startDisplay = function() {
   TTOS.gc = TTOS.canvas.getContext('2d');
-  TTOS.children.intervals += setInterval(TTOS.draw, 1);
+  TTOS.children.intervals.push(setInterval(TTOS.draw, 1));
 };
 
 TTOS.draw = function() {
