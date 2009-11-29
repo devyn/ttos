@@ -42,3 +42,4 @@ TTOS.mouse.eventHandler = function(e) {
 window.onmousedown = TTOS.mouse.eventHandler;
 window.onmouseup = TTOS.mouse.eventHandler;
 window.onmousemove = TTOS.mouse.eventHandler;
+window.oncontextmenu = function(){return false;};

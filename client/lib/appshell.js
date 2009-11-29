@@ -41,6 +41,7 @@ TTOS.AppShell = function() {
   };
   this.addApp(debugApp);
   var debugApp2 = new TTOS.Application(debugApp);
+  debugApp2.button = new TTOS.Controls.Button(debugApp2, {px: 0.50, ox: -50, ow: 100, py: 0.50, oy: -30, oh: 60});
   debugApp2.draw = function(shell) {
     var ctx = TTOS.context;
     ctx.save();
@@ -50,8 +51,24 @@ TTOS.AppShell = function() {
     ctx.fillStyle = grad;
     ctx.fillRect(0,0,shell.panelWidth(),shell.panelHeight());
     ctx.restore();
+    debugApp2.button.draw();
   };
   this.addApp(debugApp2);
+  var debugApp3 = new TTOS.Application({shell:this});
+  debugApp3.title = "Debug Application - just a test";
+  debugApp3.image = new Image();
+  debugApp3.image.src = "res/circles.png";
+  debugApp3.draw = function(shell) {
+    var ctx = TTOS.context;
+    ctx.save();
+    var grad = ctx.createLinearGradient(0,0,0,shell.panelHeight());
+    grad.addColorStop(0.0, "#000");
+    grad.addColorStop(1.0, "#882");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,shell.panelWidth(),shell.panelHeight());
+    ctx.restore();
+  };
+  this.addApp(debugApp3);
 };
 
 with (TTOS.AppShell) {
@@ -101,10 +118,10 @@ with (TTOS.AppShell) {
     ctx.fill();
     ctx.restore();
     ctx.save();
-    ctx.translate(36,0);
     for (c in this.content) {
-      ctx.drawImage(this.content[c].image, 3+3*c, 3, 24, 24);
-      ctx.translate(24,0);
+      c = this.content[c];
+      ctx.globalAlpha = c.iconPos.opacity;
+      ctx.drawImage(c.image, c.iconPos.x, c.iconPos.y, 24, 24);
     }
     ctx.restore();
     ctx.save();
@@ -142,37 +159,50 @@ with (TTOS.AppShell) {
    */
   prototype.switchApp = function(appIndex) {
     if (appIndex != null && appIndex >= this.content.length || appIndex < 0) throw {name:"ArgumentError",message:"appIndex out of array bounds ["+appIndex+" / "+this.content.length+"]."};
+    if (appIndex == this.content.indexOf(this.currentApp)) return false;
     //console.log("switch from "+this.content.indexOf(this.currentApp)+" to "+appIndex+" ("+arguments.callee.caller.toString()+")");
     var t = this;
     var after = function() { with(t) { currentApp = content[appIndex]; } };
-    if (this.content.indexOf(this.currentApp) == appIndex) {
-      after();
-    } else if (appIndex == null) {
-      this.caiTracker.tween({opacity:0.0,ox:-30,oy:3}, 0.1, after);
-    } else if (this.currentApp == null) {
-      this.caiTracker.tween({opacity:0.3,ox:39+27*appIndex,oy:3}, 0.1, after);
-    } else {
-      this.caiTracker.tween({ox:39+27*appIndex,oy:3,opacity:0.3}, 0.1, after);
-    }
+    this.updateCAI(appIndex, after);
   };
   /*
-   * add application "app" to AppShell
+   * update current app indicator
+   */
+  prototype.updateCAI = function(appIndex, after) {
+    if(!after) after = function(){};
+    if (appIndex < 0) appIndex = null;
+    if (appIndex == null)
+      this.caiTracker.tween({opacity:0.0,ox:-30,oy:3}, 0.1, after);
+    else if (this.currentApp == null)
+      this.caiTracker.tween({opacity:0.3,ox:39+27*appIndex,oy:3}, 0.1, after);
+    else
+      this.caiTracker.tween({ox:39+27*appIndex,oy:3,opacity:0.3}, 0.1, after);
+  };
+  /*
+   * add application "app" to AppShell,
+   * run app.init()
    */
   prototype.addApp = function(app) {
-    // TODO: add an effect
     if (this.content.indexOf(app) != -1) return false;
     this.content.push(app);
-    var i = this.content.indexOf(app);
     var t = this;
-    this.flickMap["app"+i] = {
+    app.iconPos = new Animator({x:39+27*this.content.indexOf(app),y:-30,opacity:0.0});
+    app.aid = Math.round(Math.random()*1000000000000);
+    this.flickMap["app"+app.aid] = {
       path: function(ctx) {
-              ctx.rect(39+27*i,3,24,24);
+              ctx.rect(app.iconPos.x,app.iconPos.y,24,24);
             },
       mousedown: function(e) {
                    // why mousedown? because it feels more instant to the user.
-                   t.switchApp(i);
+                   if (e.button == 2)
+                     t.closeApp(t.content.indexOf(app));
+                   else
+                     t.switchApp(t.content.indexOf(app));
                  }
     };
+    app.init();
+    app.iconPos.tween({y:3,opacity:1.0}, 0.1);
+    this.switchApp(i);
     return true;
   };
   /*
@@ -181,10 +211,56 @@ with (TTOS.AppShell) {
    * [!] make sure to close the application first
    */
   prototype.removeApp = function(appIndex) {
-    // TODO: add an effect
     if (!this.content[appIndex]) return false;
-    delete this.content[appIndex];
-    delete this.flickMap["app"+appIndex];
-    return true;
+    if(this.content[appIndex] == this.currentApp) this.prevApp();
+    else if (appIndex < this.content.indexOf(this.currentApp)) this.updateCAI(this.content.indexOf(this.currentApp)-1); // make sure CAI is in the right position
+    var a = this.content.slice(appIndex+1);
+    for (i in a) {
+      a[i].iconPos.tween({x:a[i].iconPos.x-27},0.1);
+    }
+    var t = this;
+    this.content[appIndex].iconPos.tween({y:-30,opacity:0.0}, 0.1,
+      function() {
+        t.content.splice(appIndex,1);
+        delete t.flickMap["app"+this.content[appIndex].aid];
+      });
+  };
+  /*
+   * close and remove application.
+   */
+  prototype.closeApp = function(appIndex) {
+    if(!this.content[appIndex]) return false;
+    this.content[appIndex].close();
+    this.removeApp(appIndex);
+  };
+  /*
+   * move forward one app in this.content,
+   * including the appChooser,
+   * else move to back (cycle)
+   */
+  prototype.nextApp = function() {
+    if (this.content.length == 0)
+      return false;
+    else if (this.currentApp == null)
+      this.switchApp(0);
+    else if (this.content.indexOf(this.currentApp) < this.content.length-1)
+      this.switchApp(this.content.indexOf(this.currentApp)+1);
+    else
+      this.switchApp(null);
+  };
+  /*
+   * move backward one app in this.content,
+   * including the appChooser,
+   * else move to front (cycle)
+   */
+  prototype.prevApp = function() {
+    if (this.content.length == 0)
+      return false;
+    else if (this.content.indexOf(this.currentApp) == 0)
+      this.switchApp(null);
+    else if (this.currentApp == null)
+      this.switchApp(this.content.length-1);
+    else
+      this.switchApp(this.content.indexOf(this.currentApp)-1);
   };
 }

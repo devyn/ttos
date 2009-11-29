@@ -9,3 +9,5 @@ TTOS.init = function() {
   TTOS.context = TTOS.canvas.getContext('2d');
   TTOS.shell = new TTOS.AppShell();
 };
+
+TTOS.Controls = {};
