@@ -41,7 +41,8 @@ TTOS.AppShell = function() {
   };
   this.addApp(debugApp);
   var debugApp2 = new TTOS.Application(debugApp);
-  debugApp2.button = new TTOS.Controls.Button(debugApp2, {px: 0.50, ox: -50, ow: 100, py: 0.50, oy: -30, oh: 60});
+  debugApp2.button = new TTOS.Controls.Button(debugApp2, {px: 0.50, ox: -75, ow: 150, py: 0.50, oy: -20, oh: 40});
+  debugApp2.button.text = "Test Button";
   debugApp2.draw = function(shell) {
     var ctx = TTOS.context;
     ctx.save();
