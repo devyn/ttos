@@ -19,10 +19,12 @@ with(TTOS.Controls.Button) {
   prototype.draw = function() {
     var ctx = TTOS.context;
     ctx.save();
-    var x = this.animator.px*this.app.shell.panelWidth()+this.animator.ox;
-    var y = this.animator.py*this.app.shell.panelHeight()+this.animator.oy;
-    var w = this.animator.pw*this.app.shell.panelWidth()+this.animator.ow;
-    var h = this.animator.ph*this.app.shell.panelHeight()+this.animator.oh;
+    ctx.globalAlpha = this.animator.opacity;
+    ctx.save();
+    var x = this.animator.px*(this.app instanceof TTOS.Application ? this.app.shell.panelWidth() : TTOS.canvas.width)+this.animator.ox;
+    var y = this.animator.py*(this.app instanceof TTOS.Application ? this.app.shell.panelHeight() : TTOS.canvas.height)+this.animator.oy;
+    var w = this.animator.pw*(this.app instanceof TTOS.Application ? this.app.shell.panelWidth() : TTOS.canvas.width)+this.animator.ow;
+    var h = this.animator.ph*(this.app instanceof TTOS.Application ? this.app.shell.panelHeight() : TTOS.canvas.height)+this.animator.oh;
     var fillGrad = ctx.createLinearGradient(x,y,x,y+h);
     with (fillGrad) {
       addColorStop(0.00, "#5f5f5f");
@@ -51,15 +53,17 @@ with(TTOS.Controls.Button) {
     ctx.font = this.font;
     ctx.fillText(this.text, x+w/2, y+h/2);
     ctx.restore();
+    ctx.restore();
   };
   prototype.path = function(ctx) {
-    var x = this.animator.px*this.app.shell.panelWidth()+this.animator.ox;
-    var y = this.animator.py*this.app.shell.panelHeight()+this.animator.oy;
-    var w = this.animator.pw*this.app.shell.panelWidth()+this.animator.ow;
-    var h = this.animator.ph*this.app.shell.panelHeight()+this.animator.oh;
+    var x = this.animator.px*(this.app instanceof TTOS.Application ? this.app.shell.panelWidth() : TTOS.canvas.width)+this.animator.ox;
+    var y = this.animator.py*(this.app instanceof TTOS.Application ? this.app.shell.panelHeight() : TTOS.canvas.height)+this.animator.oy;
+    var w = this.animator.pw*(this.app instanceof TTOS.Application ? this.app.shell.panelWidth() : TTOS.canvas.width)+this.animator.ow;
+    var h = this.animator.ph*(this.app instanceof TTOS.Application ? this.app.shell.panelHeight() : TTOS.canvas.height)+this.animator.oh;
     ctx.roundRect(x,y,w,h,5);
   };
   prototype.mouseup = function(evt) {
     console.log("button "+this.id+" clicked (with mouse button "+evt.button+").");
+    if (typeof this.click == 'function') this.click(evt);
   };
 };

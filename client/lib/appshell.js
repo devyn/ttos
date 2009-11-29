@@ -24,52 +24,7 @@ TTOS.AppShell = function() {
                t.switchApp(null);
              }
   };
-  // FOR DEBUGGING
-  var debugApp = new TTOS.Application({shell:this});
-  debugApp.title = "Debug Application - just a test";
-  debugApp.image = new Image();
-  debugApp.image.src = "res/circles.png";
-  debugApp.draw = function(shell) {
-    var ctx = TTOS.context;
-    ctx.save();
-    var grad = ctx.createLinearGradient(0,0,0,shell.panelHeight());
-    grad.addColorStop(0.0, "#000");
-    grad.addColorStop(1.0, "#288");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0,0,shell.panelWidth(),shell.panelHeight());
-    ctx.restore();
-  };
-  this.addApp(debugApp);
-  var debugApp2 = new TTOS.Application(debugApp);
-  debugApp2.button = new TTOS.Controls.Button(debugApp2, {px: 0.50, ox: -75, ow: 150, py: 0.50, oy: -20, oh: 40});
-  debugApp2.button.text = "Test Button";
-  debugApp2.draw = function(shell) {
-    var ctx = TTOS.context;
-    ctx.save();
-    var grad = ctx.createLinearGradient(0,0,0,shell.panelHeight());
-    grad.addColorStop(0.0, "#000");
-    grad.addColorStop(1.0, "#822");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0,0,shell.panelWidth(),shell.panelHeight());
-    ctx.restore();
-    debugApp2.button.draw();
-  };
-  this.addApp(debugApp2);
-  var debugApp3 = new TTOS.Application({shell:this});
-  debugApp3.title = "Debug Application - just a test";
-  debugApp3.image = new Image();
-  debugApp3.image.src = "res/circles.png";
-  debugApp3.draw = function(shell) {
-    var ctx = TTOS.context;
-    ctx.save();
-    var grad = ctx.createLinearGradient(0,0,0,shell.panelHeight());
-    grad.addColorStop(0.0, "#000");
-    grad.addColorStop(1.0, "#882");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0,0,shell.panelWidth(),shell.panelHeight());
-    ctx.restore();
-  };
-  this.addApp(debugApp3);
+  this.messages = [];
 };
 
 with (TTOS.AppShell) {
@@ -89,6 +44,7 @@ with (TTOS.AppShell) {
     TTOS.canvas.height = window.innerHeight;
     this.drawApp();
     this.drawFlick();
+    this.drawMessage();
     TTOS.mouse.clearQueue();
   };
   /*
@@ -137,7 +93,7 @@ with (TTOS.AppShell) {
     ctx.font = fs+"px sans-serif";
     ctx.fillText(time, TTOS.canvas.width-(time.length*(fs/2)+10), 30-fs/2);
     ctx.restore();
-    TTOS.mouse.fireMap(this.flickMap);
+    if (this.messages.length==0) TTOS.mouse.fireMap(this.flickMap);
   };
   /*
    * draw the currently open app
@@ -153,7 +109,7 @@ with (TTOS.AppShell) {
     if (this.currentApp) this.currentApp.draw(this);
     else TTOS.appChooser.draw(this);
     ctx.restore();
-    if (this.currentApp) TTOS.mouse.fireMap(this.currentApp.mouseMap, function(ctx){ctx.translate(0,30);});
+    if (this.currentApp && this.messages.length==0) TTOS.mouse.fireMap(this.currentApp.mouseMap, function(ctx){ctx.translate(0,30);});
   };
   /*
    * switch apps (index no.), null for app chooser
@@ -165,6 +121,12 @@ with (TTOS.AppShell) {
     var t = this;
     var after = function() { with(t) { currentApp = content[appIndex]; } };
     this.updateCAI(appIndex, after);
+  };
+  prototype.drawMessage = function() {
+    if (this.messages[0]) {
+      this.messages[0].draw();
+      TTOS.mouse.fireMap(this.messages[0].mouseMap);
+    }
   };
   /*
    * update current app indicator
@@ -203,7 +165,7 @@ with (TTOS.AppShell) {
     };
     app.init();
     app.iconPos.tween({y:3,opacity:1.0}, 0.1);
-    this.switchApp(i);
+    this.switchApp(this.content.indexOf(app));
     return true;
   };
   /*
