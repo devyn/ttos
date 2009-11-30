@@ -15,15 +15,15 @@ TTOS.mouse.fireMap = function(map, modifiers) {
       map[m].path(ctx);
       if (ctx.isPointInPath(evt.x, evt.y)) {
         //console.log(evt.type+": "+evt.x+","+evt.y+" ("+m+")");
-        if (typeof map[m][evt.type] == 'function') map[m][evt.type](evt);
+        if (typeof map[m][evt.type] == 'function') { try { map[m][evt.type](evt); } catch(e){console.log(e)} }
         if (!map[m].hovering && evt.type == "mousemove") {
           map[m].hovering = true;
-          if(typeof map[m].mouseover == 'function') map[m].mouseover(evt);
+          if(typeof map[m].mouseover == 'function') { try { map[m].mouseover(evt); } catch(e){console.log(e)} }
         }
       } else {
         if (map[m].hovering && evt.type == "mousemove") {
           map[m].hovering = false;
-          if(typeof map[m].mouseout == 'function') map[m].mouseout(evt);
+          if(typeof map[m].mouseout == 'function') { try { map[m].mouseout(evt); } catch(e){console.log(e)} }
         }
       }
       ctx.restore();

@@ -13,6 +13,7 @@ TTOS.Controls.Button = function(app, opt) {
   this.font = "18px sans-serif";
   this.text = "button"+this.id;
   app.mouseMap["button"+this.id] = this;
+  this.clickable = true;
 };
 
 with(TTOS.Controls.Button) {
@@ -63,7 +64,12 @@ with(TTOS.Controls.Button) {
     ctx.roundRect(x,y,w,h,5);
   };
   prototype.mouseup = function(evt) {
-    console.log("button "+this.id+" clicked (with mouse button "+evt.button+").");
-    if (typeof this.click == 'function') this.click(evt);
+    //console.log("button "+this.id+" clicked (with mouse button "+evt.button+").");
+    if(this.clickable) {
+      if (typeof this.click == 'function') this.click(evt);
+      this.clickable = false;
+      var t = this;
+      setTimeout(function(){t.clickable=true;},100);
+    }
   };
 };

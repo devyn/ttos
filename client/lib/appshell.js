@@ -184,8 +184,8 @@ with (TTOS.AppShell) {
     var t = this;
     this.content[appIndex].iconPos.tween({y:-30,opacity:0.0}, 0.1,
       function() {
+        delete t.flickMap["app"+t.content[appIndex].aid];
         t.content.splice(appIndex,1);
-        delete t.flickMap["app"+this.content[appIndex].aid];
       });
   };
   /*
